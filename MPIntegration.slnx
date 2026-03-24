@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="MPIntegration.App/MPIntegration.App.csproj" />
+  <Project Path="MPIntegration.Core/MPIntegration.Core.csproj" />
+  <Project Path="MPIntegration.Infrastructure/MPIntegration.Infrastructure.csproj" />
+</Solution>
