@@ -5,8 +5,124 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MPIntegration.App"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
-
+        Title="MainWindow" Height="500" Width="800">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Button Grid.Row="0"
+                Width="160"
+                Height="35"
+                Content="Выбрать папку"
+                Click="SelectFolderButton_Click"/>
+        <TextBlock Grid.Row="2"
+                   x:Name="CurrentTrackTextBlock"
+                   FontSize="14"
+                   FontWeight="Bold"
+                   Text="Текущий трек: ничего не выбрано"/>
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition Width="300"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       VerticalAlignment="Center"
+                       Text="Поиск:"/>
+            <TextBox Grid.Column="2"
+                     x:Name="SearchTextBox"
+                     Height="28"
+                     VerticalContentAlignment="Center"
+                     TextChanged="SearchTextBox_TextChanged"/>
+        </Grid>
+        <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Center">
+            <Button Width="100"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Content="Prev"
+                    Click="PrevButton_Click"/>
+            <Button Width="100"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Content="Play"
+                    Click="PlayButton_Click"/>
+            <Button Width="100"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Content="Pause"
+                    Click="PauseButton_Click"/>
+            <Button Width="100"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Content="Stop"
+                    Click="StopButton_Click"/>
+            <Button Width="100"
+                    Height="35"
+                    Content="Next"
+                    Click="NextButton_Click"/>
+        </StackPanel>
+        <Grid Grid.Row="8">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="70"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="70"/>
+                <ColumnDefinition Width="20"/>
+                <ColumnDefinition Width="80"/>
+                <ColumnDefinition Width="150"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0"
+                       x:Name="CurrentTimeTextBlock"
+                       VerticalAlignment="Center"
+                       Text="00:00"/>
+            <Slider Grid.Column="1"
+                    x:Name="TrackPositionSlider"
+                    Minimum="0"
+                    Maximum="100"
+                    ValueChanged="TrackPositionSlider_ValueChanged"
+                    PreviewMouseLeftButtonUp="TrackPositionSlider_PreviewMouseLeftButtonUp"/>
+            <TextBlock Grid.Column="2"
+                       x:Name="TotalTimeTextBlock"
+                       VerticalAlignment="Center"
+                       HorizontalAlignment="Right"
+                       Text="00:00"/>
+            <TextBlock Grid.Column="4"
+                       VerticalAlignment="Center"
+                       Text="Громкость:"/>
+            <Slider Grid.Column="5"
+                    x:Name="VolumeSlider"
+                    Minimum="0"
+                    Maximum="100"
+                    Value="50"
+                    ValueChanged="VolumeSlider_ValueChanged"/>
+        </Grid>
+        <ListBox Grid.Row="10" x:Name="TracksListBox" MouseDoubleClick="TracksListBox_MouseDoubleClick">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Border Padding="5" Margin="2" BorderBrush="#DDD" BorderThickness="1">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Title}" 
+                               FontWeight="Bold"
+                               FontSize="14"/>
+                            <TextBlock Text="{Binding Artist}" 
+                               Foreground="Gray"/>
+                            <TextBlock Text="{Binding FilePath}" 
+                               FontSize="10"
+                               Foreground="DarkGray"
+                               TextTrimming="CharacterEllipsis"/>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </Grid>
 </Window>
