@@ -174,11 +174,37 @@ namespace MPIntegration.App.ViewModels
             {
                 if (SelectedTrack != null)
                 {
-                    PlaySelectedTrack();
+                    if (_audioPlayerService.CurrentTrack == null)
+                    {
+                        PlaySelectedTrack();
+                        return;
+                    }
+                    if (SelectedTrack.FilePath != _audioPlayerService.CurrentTrack.FilePath)
+                    {
+                        PlaySelectedTrack();
+                        return;
+                    }
+                    if (_audioPlayerService.IsPaused)
+                    {
+                        _audioPlayerService.Resume();
+                        _timer.Start();
+                        CurrentTrackText = $"Сейчас играет: {SelectedTrack.Artist} - {SelectedTrack.Title}";
+                        return;
+                    }
+                    if (_audioPlayerService.IsStopped)
+                    {
+                        PlaySelectedTrack();
+                        return;
+                    }
                     return;
                 }
-                _audioPlayerService.Resume();
-                _timer.Start();
+                if (_audioPlayerService.CurrentTrack != null && _audioPlayerService.IsPaused)
+                {
+                    _audioPlayerService.Resume();
+                    _timer.Start();
+                    CurrentTrackText =
+                        $"Сейчас играет: {_audioPlayerService.CurrentTrack.Artist} - {_audioPlayerService.CurrentTrack.Title}";
+                }
             }
             catch (Exception ex)
             {
@@ -207,7 +233,19 @@ namespace MPIntegration.App.ViewModels
         {
             try
             {
+                if (_audioPlayerService.CurrentTrack == null || !_audioPlayerService.IsPlaying)
+                    return;
                 _audioPlayerService.Pause();
+                _timer.Stop();
+                if (SelectedTrack != null)
+                {
+                    CurrentTrackText = $"Пауза: {SelectedTrack.Artist} - {SelectedTrack.Title}";
+                }
+                else if (_audioPlayerService.CurrentTrack != null)
+                {
+                    CurrentTrackText =
+                        $"Пауза: {_audioPlayerService.CurrentTrack.Artist} - {_audioPlayerService.CurrentTrack.Title}";
+                }
             }
             catch (Exception ex)
             {
@@ -218,10 +256,25 @@ namespace MPIntegration.App.ViewModels
         {
             try
             {
+                if (_audioPlayerService.CurrentTrack == null)
+                    return;
                 _audioPlayerService.Stop();
                 _timer.Stop();
                 TrackPosition = 0;
                 CurrentTimeText = "00:00";
+                TotalTimeText = "00:00";
+                if (SelectedTrack != null)
+                {
+                    CurrentTrackText = $"Остановлено: {SelectedTrack.Artist} - {SelectedTrack.Title}";
+                }
+                else if (_audioPlayerService.CurrentTrack != null)
+                {
+                    CurrentTrackText = $"Остановлено: {_audioPlayerService.CurrentTrack.Artist} - {_audioPlayerService.CurrentTrack.Title}";
+                }
+                else
+                {
+                    CurrentTrackText = "Воспроизведение остановлено";
+                }
             }
             catch (Exception ex)
             {
