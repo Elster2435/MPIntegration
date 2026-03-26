@@ -7,7 +7,6 @@ namespace MPIntegration.App.Services
     {
         private readonly MediaPlayer _player = new();
         public Track? CurrentTrack { get; private set; }
-        public MediaPlayer Player => _player;
         public event EventHandler? PlaybackEnded;
         public AudioPlayerService()
         {

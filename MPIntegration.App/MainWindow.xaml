@@ -24,12 +24,12 @@
                 Width="160"
                 Height="35"
                 Content="Выбрать папку"
-                Click="SelectFolderButton_Click"/>
+                Command="{Binding SelectFolderCommand}"/>
         <TextBlock Grid.Row="2"
                    x:Name="CurrentTrackTextBlock"
                    FontSize="14"
                    FontWeight="Bold"
-                   Text="Текущий трек: ничего не выбрано"/>
+                   Text="{Binding CurrentTrackText}"/>
         <Grid Grid.Row="4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
@@ -43,33 +43,33 @@
                      x:Name="SearchTextBox"
                      Height="28"
                      VerticalContentAlignment="Center"
-                     TextChanged="SearchTextBox_TextChanged"/>
+                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
         </Grid>
         <StackPanel Grid.Row="6" Orientation="Horizontal" HorizontalAlignment="Center">
             <Button Width="100"
                     Height="35"
                     Margin="0,0,10,0"
                     Content="Prev"
-                    Click="PrevButton_Click"/>
+                    Command="{Binding PrevCommand}"/>
             <Button Width="100"
                     Height="35"
                     Margin="0,0,10,0"
                     Content="Play"
-                    Click="PlayButton_Click"/>
+                    Command="{Binding PlayCommand}"/>
             <Button Width="100"
                     Height="35"
                     Margin="0,0,10,0"
                     Content="Pause"
-                    Click="PauseButton_Click"/>
+                    Command="{Binding PauseCommand}"/>
             <Button Width="100"
                     Height="35"
                     Margin="0,0,10,0"
                     Content="Stop"
-                    Click="StopButton_Click"/>
+                    Command="{Binding StopCommand}"/>
             <Button Width="100"
                     Height="35"
                     Content="Next"
-                    Click="NextButton_Click"/>
+                    Command="{Binding NextCommand}"/>
         </StackPanel>
         <Grid Grid.Row="8">
             <Grid.ColumnDefinitions>
@@ -81,20 +81,17 @@
                 <ColumnDefinition Width="150"/>
             </Grid.ColumnDefinitions>
             <TextBlock Grid.Column="0"
-                       x:Name="CurrentTimeTextBlock"
                        VerticalAlignment="Center"
-                       Text="00:00"/>
+                       Text="{Binding CurrentTimeText}"/>
             <Slider Grid.Column="1"
                     x:Name="TrackPositionSlider"
                     Minimum="0"
-                    Maximum="100"
-                    ValueChanged="TrackPositionSlider_ValueChanged"
-                    PreviewMouseLeftButtonUp="TrackPositionSlider_PreviewMouseLeftButtonUp"/>
+                    Maximum="{Binding TrackMaximum}"
+                    Value="{Binding TrackPosition, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
             <TextBlock Grid.Column="2"
-                       x:Name="TotalTimeTextBlock"
                        VerticalAlignment="Center"
                        HorizontalAlignment="Right"
-                       Text="00:00"/>
+                       Text="{Binding TotalTimeText}"/>
             <TextBlock Grid.Column="4"
                        VerticalAlignment="Center"
                        Text="Громкость:"/>
@@ -102,10 +99,13 @@
                     x:Name="VolumeSlider"
                     Minimum="0"
                     Maximum="100"
-                    Value="50"
-                    ValueChanged="VolumeSlider_ValueChanged"/>
+                    Value="{Binding Volume, Mode=TwoWay}"/>
         </Grid>
-        <ListBox Grid.Row="10" x:Name="TracksListBox" MouseDoubleClick="TracksListBox_MouseDoubleClick">
+        <ListBox Grid.Row="10"
+                 x:Name="TracksListBox"
+                 ItemsSource="{Binding Tracks}"
+                 SelectedItem="{Binding SelectedTrack, Mode=TwoWay}"
+                 MouseDoubleClick="TracksListBox_MouseDoubleClick">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Border Padding="5" Margin="2" BorderBrush="#DDD" BorderThickness="1">
