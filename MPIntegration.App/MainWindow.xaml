@@ -20,11 +20,22 @@
             <RowDefinition Height="10"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Button Grid.Row="0"
-                Width="160"
-                Height="35"
-                Content="Выбрать папку"
-                Command="{Binding SelectFolderCommand}"/>
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <Button Width="100"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Content="Добавить треки"
+                    Command="{Binding AddTracksCommand}"/>
+            <Button Width="100"
+                    Height="35"
+                    Margin="0,0,10,0"
+                    Content="Удалить трек"
+                    Command="{Binding DeleteTrackCommand}"/>
+            <Button Width="100"
+                    Height="35"
+                    Content="Открыть папку"
+                    Command="{Binding OpenTracksFolderCommand}"/>
+        </StackPanel>
         <TextBlock Grid.Row="2"
                    x:Name="CurrentTrackTextBlock"
                    FontSize="14"
@@ -111,14 +122,14 @@
                     <Border Padding="5" Margin="2" BorderBrush="#DDD" BorderThickness="1">
                         <StackPanel>
                             <TextBlock Text="{Binding Title}" 
-                               FontWeight="Bold"
-                               FontSize="14"/>
+                                       FontWeight="Bold"
+                                       FontSize="14"/>
                             <TextBlock Text="{Binding Artist}" 
-                               Foreground="Gray"/>
-                            <TextBlock Text="{Binding FilePath}" 
-                               FontSize="10"
-                               Foreground="DarkGray"
-                               TextTrimming="CharacterEllipsis"/>
+                                       Foreground="Gray"/>
+                            <TextBlock Text="{Binding DisplayPath}" 
+                                       FontSize="10"
+                                       Foreground="DarkGray"
+                                       TextTrimming="CharacterEllipsis"/>
                         </StackPanel>
                     </Border>
                 </DataTemplate>

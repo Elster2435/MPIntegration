@@ -2,12 +2,14 @@
 using MPIntegration.App.Services;
 using MPIntegration.Core.Models;
 using MPIntegration.Infrastructure.Providers;
+using MPIntegration.Infrastructure.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
 using System.Xml.Serialization;
@@ -18,6 +20,7 @@ namespace MPIntegration.App.ViewModels
     {
         private readonly AudioPlayerService _audioPlayerService;
         private readonly DispatcherTimer _timer;
+        private readonly TrackStorageService _trackStorageService;
         private List<Track> _allTracks = new();
         private string _searchText = string.Empty;
         private string _currentTrackText = "Текущий трек: ничего не выбрано";
@@ -103,7 +106,9 @@ namespace MPIntegration.App.ViewModels
                 OnPropertyChanged();
             }
         }
-        public ICommand SelectFolderCommand { get; }
+        public ICommand AddTracksCommand { get; }
+        public ICommand DeleteTrackCommand { get; }
+        public ICommand OpenTracksFolderCommand { get; }
         public ICommand PlayCommand { get; }
         public ICommand PauseCommand { get; }
         public ICommand StopCommand { get; }
@@ -114,10 +119,14 @@ namespace MPIntegration.App.ViewModels
         {
             _audioPlayerService = new AudioPlayerService();
             _audioPlayerService.PlaybackEnded += AudioPlayerService_PlaybackEnded;
+            _trackStorageService = new TrackStorageService();
+            _trackStorageService.EnsureTracksFolderExists();
             _timer = new DispatcherTimer();
             _timer.Interval = TimeSpan.FromMilliseconds(500);
             _timer.Tick += Timer_Tick;
-            SelectFolderCommand = new RelayCommand(async _ => await SelectFolderAsync());
+            AddTracksCommand = new RelayCommand(async _ => await AddTracksAsync());
+            DeleteTrackCommand = new RelayCommand(async _ => await DeleteSelectedTrackAsync());
+            OpenTracksFolderCommand = new RelayCommand(_ => OpenTracksFolder());
             PlayCommand = new RelayCommand(_ => Play());
             PauseCommand = new RelayCommand(_ => Pause());
             StopCommand = new RelayCommand(_ => Stop());
@@ -125,23 +134,95 @@ namespace MPIntegration.App.ViewModels
             PrevCommand = new RelayCommand(_ =>  Prev());
             TrackDoubleClickCommand = new RelayCommand(_ => PlaySelectedTrack());
             Volume = 50;
+            _ = LoadTracksAsync();
         }
-        private async Task SelectFolderAsync()
+        private async Task LoadTracksAsync()
         {
             try
             {
-                using var dialog = new FolderBrowserDialog();
-                var result = dialog.ShowDialog();
-                if (result != DialogResult.OK)
-                    return;
-                var provider = new LocalMusicProvider(dialog.SelectedPath);
+                var provider = new LocalMusicProvider(_trackStorageService.GetTracksFolderPath());
                 _allTracks = await provider.GetTracksAsync();
                 ApplyTrackFilter();
                 CurrentTrackText = $"Загружено треков: {_allTracks.Count}";
             }
             catch (Exception ex)
             {
-                System.Windows.MessageBox.Show($"Ошибка загрузки папки: {ex.Message}");
+                System.Windows.MessageBox.Show($"Ошибка загрузки треков: {ex.Message}");
+            }
+        }
+        private async Task AddTracksAsync()
+        {
+            try
+            {
+                var dialog = new OpenFileDialog
+                {
+                    Title = "Выберите треки",
+                    Filter = "Аудиофайлы|*.mp3",
+                    Multiselect = true
+                };
+                DialogResult result = dialog.ShowDialog();
+                if (result != DialogResult.OK)
+                    return;
+                _trackStorageService.AddTracks(dialog.FileNames);
+                await LoadTracksAsync();
+                CurrentTrackText = $"Добавлено треков. Всего: {_allTracks.Count}";
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Ошибка добавления треков: {ex.Message}");
+            }
+        }
+        private async Task DeleteSelectedTrackAsync()
+        {
+            try
+            {
+                if (SelectedTrack == null)
+                {
+                    System.Windows.MessageBox.Show("Сначала выбери трек для удаления.");
+                    return;
+                }
+                var trackToDelete = SelectedTrack;
+                var confirmResult = System.Windows.MessageBox.Show(
+                    $"Удалить трек:\n{trackToDelete.Artist} - {trackToDelete.Title}?",
+                    "Подтверждение удаления",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question);
+                if (confirmResult != MessageBoxResult.Yes)
+                    return;
+                bool wasCurrentTrack = _audioPlayerService.CurrentTrack != null &&
+                                       _audioPlayerService.CurrentTrack.FilePath == trackToDelete.FilePath;
+                if (wasCurrentTrack)
+                {
+                    _audioPlayerService.Stop();
+                    _timer.Stop();
+                    TrackPosition = 0;
+                    CurrentTimeText = "00:00";
+                    TotalTimeText = "00:00";
+                }
+                bool deleted = _trackStorageService.DeleteTrack(trackToDelete.FilePath);
+                if (!deleted)
+                {
+                    System.Windows.MessageBox.Show("Не удалось удалить файл трека.");
+                    return;
+                }
+                SelectedTrack = null;
+                await LoadTracksAsync();
+                CurrentTrackText = $"Трек удалён. Всего: {_allTracks.Count}";
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Ошибка удаления трека: {ex.Message}");
+            }
+        }
+        private void OpenTracksFolder()
+        {
+            try
+            {
+                _trackStorageService.OpenTracksFolder();
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show($"Ошибка открытия папки Tracks: {ex.Message}");
             }
         }
         private void ApplyTrackFilter()
